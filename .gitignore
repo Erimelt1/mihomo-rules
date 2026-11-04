@@ -1,0 +1,8 @@
+# Deny by default. Expand the allowlist only together with reviewed assets.
+*
+
+!.gitignore
+!README.md
+!process/
+!process/*.yaml
+

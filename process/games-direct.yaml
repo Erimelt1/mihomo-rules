@@ -1,0 +1,46 @@
+# Mihomo classical rule provider: Windows game processes routed DIRECT.
+#
+# Inclusion policy:
+# - use exact process names tied to a confirmed game or an existing local rule;
+# - keep this file process-only; domains and IPs belong to separate providers;
+# - avoid shared runtimes, generic anti-cheats, and engine-wide wildcards.
+#
+# Owner-approved EST baseline (2026-11-05): 20 reviewed exact names from the
+# previous candidate plus Deadlock and ARC Raiders, 22 rules total.
+# Reviewed source reference (2026-10-16):
+# https://raw.githubusercontent.com/legiz-ru/mihomo-rule-sets/main/other/games-direct.yaml
+
+payload:
+  # Epic Games Launcher — exact replacement for the existing inline regex.
+  - PROCESS-NAME,EpicGamesLauncher.exe
+  - PROCESS-NAME,EpicWebHelper.exe
+  - PROCESS-NAME,EpicOnlineServicesUserHelper.exe
+  - PROCESS-NAME,EpicOnlineServicesInstallHelper.exe
+
+  # Escape from Tarkov — owner-confirmed DIRECT.
+  - PROCESS-NAME,BsgLauncher.exe
+  - PROCESS-NAME,EscapeFromTarkov.exe
+  - PROCESS-NAME,EscapeFromTarkovArena.exe
+  - PROCESS-NAME,EscapeFromTarkov_BE.exe
+  - PROCESS-NAME,EscapeFromTarkovArena_BE.exe
+
+  # Overwatch 2 / Battle.net — owner-confirmed working DIRECT.
+  - PROCESS-NAME,Overwatch.exe
+  - PROCESS-NAME,Battle.net.exe
+  - PROCESS-NAME,BlizzardBrowser.exe
+
+  # HoYoverse — restores the former exact process policy without broad regex.
+  - PROCESS-NAME,GenshinImpact.exe
+  - PROCESS-NAME,ZenlessZoneZero.exe
+  - PROCESS-NAME,StarRail.exe
+  - PROCESS-NAME,BH3.exe
+  - PROCESS-NAME,ZFGameBrowser.exe
+  - PROCESS-NAME,HYUpdater.exe
+  - PROCESS-NAME,HYPHelper.exe
+  - PROCESS-NAME,HYP.exe
+
+  # Deadlock — owner-confirmed DIRECT after CDN77-related complaints.
+  - PROCESS-NAME,deadlock.exe
+
+  # ARC Raiders — owner-approved EST pilot.
+  - PROCESS-NAME,PioneerGame.exe
