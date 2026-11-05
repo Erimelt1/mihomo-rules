@@ -1,0 +1,136 @@
+name: Build games-direct candidate
+
+"on":
+  schedule:
+    - cron: "23 4 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: games-direct-candidate
+  cancel-in-progress: false
+
+jobs:
+  build-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      META_REPOSITORY: MetaCubeX/meta-rules-dat
+      META_BRANCH: meta
+      MIHOMO_VERSION: v1.19.33
+      MIHOMO_ASSET: mihomo-linux-amd64-compatible-v1.19.33.gz
+      MIHOMO_SHA256: 386508bfb1c72c43b6a0eda73708ecdce82546581b0ebcb16366c53757c622b6
+      CANDIDATE_BRANCH: automation/games-direct
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Run builder unit tests
+        run: PYTHONPATH=scripts python3 -m unittest discover -s tests -p 'test_build_games_direct.py'
+
+      - name: Resolve immutable MetaCubeX commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit="$(git ls-remote "https://github.com/${META_REPOSITORY}.git" "refs/heads/${META_BRANCH}" | awk '{print $1}')"
+          if [[ ! "${commit}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid or missing upstream commit: ${commit}" >&2
+            exit 1
+          fi
+          echo "META_COMMIT=${commit}" >> "${GITHUB_ENV}"
+
+      - name: Fetch allowlisted source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .build/source
+          for file in category-games.list itchio.list supercell.list wbgames.list; do
+            curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/${META_REPOSITORY}/${META_COMMIT}/geo/geosite/${file}" \
+              --output ".build/source/${file}"
+          done
+
+      - name: Install pinned Mihomo converter
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .build/bin
+          url="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/${MIHOMO_ASSET}"
+          curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
+            "${url}" --output .build/bin/mihomo.gz
+          printf '%s  %s\n' "${MIHOMO_SHA256}" .build/bin/mihomo.gz | sha256sum --check --strict
+          gzip --decompress --stdout .build/bin/mihomo.gz > .build/bin/mihomo
+          chmod 0755 .build/bin/mihomo
+
+      - name: Build and verify candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous=()
+          if [[ -s geo/geosite/games-direct.list ]]; then
+            previous=(--previous-list geo/geosite/games-direct.list)
+          fi
+          python3 scripts/build_games_direct.py \
+            --policy policy/games-direct-policy.json \
+            --source-dir .build/source \
+            --source-ref "${META_COMMIT}" \
+            --output-list geo/geosite/games-direct.list \
+            --output-mrs geo/geosite/games-direct.mrs \
+            --report reports/games-direct.report.json \
+            --mihomo .build/bin/mihomo \
+            "${previous[@]}"
+
+      - name: Detect generated changes
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$(git status --porcelain -- \
+            geo/geosite/games-direct.list \
+            geo/geosite/games-direct.mrs)" ]]; then
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Push reviewed candidate branch
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch --force-create "${CANDIDATE_BRANCH}"
+          git add -- \
+            geo/geosite/games-direct.list \
+            geo/geosite/games-direct.mrs \
+            reports/games-direct.report.json
+          git commit -m "Update games-direct candidate (${META_COMMIT:0:12})"
+          git fetch origin "+refs/heads/${CANDIDATE_BRANCH}:refs/remotes/origin/${CANDIDATE_BRANCH}" || true
+          git push --force-with-lease origin "HEAD:refs/heads/${CANDIDATE_BRANCH}"
+
+      - name: Open review pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing="$(gh pr list --state open --base main --head "${CANDIDATE_BRANCH}" --json url --jq '.[0].url')"
+          if [[ -z "${existing}" ]]; then
+            gh pr create \
+              --base main \
+              --head "${CANDIDATE_BRANCH}" \
+              --title "Update games-direct candidate" \
+              --body "Automated candidate from MetaCubeX commit \`${META_COMMIT}\`. Review the readable list and report before merging; no runtime configuration is changed by this workflow."
+          else
+            echo "Updated existing review PR: ${existing}"
+          fi

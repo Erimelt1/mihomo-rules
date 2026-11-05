@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source_repository": "MetaCubeX/meta-rules-dat",
+  "base_file": "category-games.list",
+  "exclude_files": [
+    "itchio.list",
+    "supercell.list",
+    "wbgames.list"
+  ],
+  "guards": {
+    "base_min": 1000,
+    "base_max": 1600,
+    "output_min": 950,
+    "output_max": 1600,
+    "max_added": 100,
+    "max_removed": 100
+  }
+}

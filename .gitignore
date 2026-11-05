@@ -1,8 +1,21 @@
-# Deny by default. Expand the allowlist only together with reviewed assets.
 *
 
 !.gitignore
 !README.md
 !process/
-!process/*.yaml
-
+!process/games-direct.yaml
+!.github/
+!.github/workflows/
+!.github/workflows/games-direct.yml
+!policy/
+!policy/games-direct-policy.json
+!scripts/
+!scripts/build_games_direct.py
+!tests/
+!tests/test_build_games_direct.py
+!geo/
+!geo/geosite/
+!geo/geosite/games-direct.list
+!geo/geosite/games-direct.mrs
+!reports/
+!reports/games-direct.report.json
