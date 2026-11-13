@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
   "source_repository": "MetaCubeX/meta-rules-dat",
-  "source_ref": "461790d18a151728e834979aad03cb29e256d181",
+  "source_ref": "2963a49408bbc37f2c2ffa6e8329fe11076a816b",
   "source_sha256": {
-    "category-games.list": "20cb05e8dbe9a15fcc6721eb669c019b26667e30d33975a315377f080cb0f0ff",
+    "category-games.list": "b0697347e947dfab834bc1f4d493fbbc8e5dd85adf30f3a1e9ba6132966d6df4",
     "itchio.list": "a4d2a75d7d1469fb459248eed4da8e94732a8e2b7b196bc1d5ec8ab62635df6c",
     "supercell.list": "5bef9037c4894260e7ef1279cf8fe405f88b208811bae6b448fc809ae9babc27",
     "wbgames.list": "6e3c803e3b6771360335ac5f96e33b69dfb801719dfa10186d1c3f8371c57ac1"
   },
   "base_file": "category-games.list",
-  "base_count": 1144,
+  "base_count": 1059,
   "exclude_files": {
     "itchio.list": 2,
     "supercell.list": 23,
     "wbgames.list": 6
   },
   "excluded_count": 31,
-  "output_count": 1113,
+  "output_count": 1028,
   "added_count": 0,
-  "removed_count": 0,
-  "output_sha256": "d329ddb100f02314408e63e7943de74b87ac510099303957063ddf0cfdc3a84e",
-  "mrs_sha256": "c77a3207479ac9d3fb78024183fd3784b1ecd3b4c27c48e80840ef214e86e93b",
+  "removed_count": 85,
+  "output_sha256": "711303c9de25f32559ffce6b2e5765af93ecae974dca5bdfe7e494e6ddbf49ff",
+  "mrs_sha256": "bcebf6dfa3297f60155114d86a910cd5146909ea68059f889926faa2b9637ed2",
   "mrs_roundtrip_order_preserved": false
 }
